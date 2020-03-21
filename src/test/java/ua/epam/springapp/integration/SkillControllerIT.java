@@ -1,45 +1,36 @@
-package ua.epam.springapp.controller;
+package ua.epam.springapp.integration;
 
 import com.google.gson.Gson;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import ua.epam.springapp.model.Skill;
-import ua.epam.springapp.service.SkillService;
 
+
+import java.util.ArrayList;
 import java.util.List;
 
-import static ua.epam.springapp.utils.SkillGenerator.generateSkills;
-import static ua.epam.springapp.utils.SkillGenerator.generateSingleSkill;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ua.epam.springapp.utils.SkillGenerator.generateSkills;
+import static ua.epam.springapp.utils.SkillGenerator.generateSingleSkill;
 
-public class SkillControllerTest {
+public class SkillControllerIT extends BaseSpringIT {
 
     private static final String BASE_URL = "/api/v1/skills";
+    private static final String NOT_FOUND_MSG = "Entity not found!";
     private static final long DEFAULT_ID = 1L;
-
-    private final SkillService skillService = Mockito.mock(SkillService.class);
-
-    private final SkillController sut = new SkillController(skillService);
-
-    private final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(sut).build();
 
     private final Gson gson = new Gson();
 
     @Test
     public void shouldGetAllSkills() throws Exception {
         List<Skill> skillsList = generateSkills(2);
-        given(this.skillService.getAll()).willReturn(skillsList);
+        given(this.skillRepository.getAll()).willReturn(skillsList);
         mockMvc.perform(get(BASE_URL)
                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
@@ -51,15 +42,33 @@ public class SkillControllerTest {
     }
 
     @Test
+    public void shouldAllSkillsNotFound() throws Exception {
+        given(this.skillRepository.getAll()).willReturn(new ArrayList<>());
+        mockMvc.perform(get(BASE_URL)
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(NOT_FOUND_MSG));
+    }
+
+    @Test
     public void shouldGetSkill() throws Exception{
         Skill skill = generateSingleSkill(DEFAULT_ID);
-        given(this.skillService.get(DEFAULT_ID)).willReturn(skill);
+        given(this.skillRepository.get(DEFAULT_ID)).willReturn(skill);
 
         mockMvc.perform(get(BASE_URL + "/" + DEFAULT_ID)
                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is((int) skill.getId())))
                 .andExpect(jsonPath("$.name", is(skill.getName())));
+    }
+
+    @Test
+    public void shouldSkillNotFound() throws Exception {
+        given(this.skillRepository.get(DEFAULT_ID)).willReturn(null);
+        mockMvc.perform(get(BASE_URL + "/" + DEFAULT_ID)
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(NOT_FOUND_MSG));
     }
 
     @Test
@@ -75,7 +84,8 @@ public class SkillControllerTest {
     @Test
     public void shouldUpdateSkill() throws Exception {
         Skill skill = generateSingleSkill(DEFAULT_ID);
-        given(this.skillService.update(DEFAULT_ID, skill)).willReturn(true);
+        given(this.skillRepository.get(DEFAULT_ID)).willReturn(skill);
+        given(this.skillRepository.update(skill)).willReturn(true);
 
         mockMvc.perform(put(BASE_URL + "/" + DEFAULT_ID)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -84,12 +94,35 @@ public class SkillControllerTest {
     }
 
     @Test
+    public void shouldUpdatedSkillNotFound() throws Exception {
+        Skill skill = generateSingleSkill(DEFAULT_ID);
+        given(this.skillRepository.get(DEFAULT_ID)).willReturn(null);
+
+        mockMvc.perform(put(BASE_URL + "/" + DEFAULT_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(gson.toJson(skill)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(NOT_FOUND_MSG));
+    }
+
+    @Test
     public void shouldDeleteSkill() throws Exception {
         Skill skill = generateSingleSkill(DEFAULT_ID);
-        given(this.skillService.remove(DEFAULT_ID)).willReturn(skill);
+        given(this.skillRepository.remove(DEFAULT_ID)).willReturn(skill);
 
         mockMvc.perform(delete(BASE_URL + "/" + DEFAULT_ID)
-                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
+
+    @Test
+    public void shouldDeletedSkillNotFound() throws Exception {
+        given(this.skillRepository.remove(DEFAULT_ID)).willReturn(null);
+
+        mockMvc.perform(delete(BASE_URL + "/" + DEFAULT_ID)
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(NOT_FOUND_MSG));
+    }
+
 }
