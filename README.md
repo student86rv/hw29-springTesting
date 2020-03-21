@@ -6,6 +6,6 @@ Spring Testing homework
 
 3. Integration test for Security
 
-Fixed bugs found by the mentor in hw-22 ("final" modifier in Constructor Injection, interface hierarchy, constants naming)
+Also fixed bugs found by the mentor in hw-22 ("final" modifier in Constructor Injection, interface hierarchy, constants naming)
 
 
