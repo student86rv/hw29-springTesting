@@ -2,17 +2,17 @@ package ua.epam.springapp.service;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import ua.epam.springapp.exception.EntityNotFoundException;
 import ua.epam.springapp.model.Developer;
 import ua.epam.springapp.repository.DeveloperRepository;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.hamcrest.Matchers.*;
 import static ua.epam.springapp.utils.DeveloperGenerator.generateDevelopers;
 import static ua.epam.springapp.utils.DeveloperGenerator.generateSingleDeveloper;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -47,6 +47,19 @@ public class DeveloperServiceImplTest {
     }
 
     @Test
+    public void shouldThrowWhenDevelopersListIsEmpty() {
+        doReturn(new ArrayList<Developer>()).when(developerRepository).getAll();
+
+        try {
+            sut.getAll();
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(developerRepository).getAll();
+    }
+
+    @Test
     public void shouldGetDeveloper() {
         Developer developer = generateSingleDeveloper(DEFAULT_ID);
         doReturn(developer).when(developerRepository).get(DEFAULT_ID);
@@ -64,6 +77,19 @@ public class DeveloperServiceImplTest {
     }
 
     @Test
+    public void shouldThrowWhenDeveloperNotFound() {
+        doReturn(null).when(developerRepository).get(DEFAULT_ID);
+
+        try {
+            sut.get(DEFAULT_ID);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(developerRepository).get(DEFAULT_ID);
+    }
+
+    @Test
     public void shouldAddDeveloper() {
         Developer developer = generateSingleDeveloper(DEFAULT_ID);
         sut.add(developer);
@@ -72,7 +98,7 @@ public class DeveloperServiceImplTest {
     }
 
     @Test
-    public void shouldUpdateAccount() {
+    public void shouldUpdateDeveloper() {
         Developer developer = generateSingleDeveloper(DEFAULT_ID);
         doReturn(developer).when(developerRepository).get(DEFAULT_ID);
         doReturn(true).when(developerRepository).update(developer);
@@ -82,6 +108,20 @@ public class DeveloperServiceImplTest {
         verify(developerRepository).update(developer);
 
         assertThat(updated, is(true));
+    }
+
+    @Test
+    public void shouldThrowWhenUpdatedDeveloperNotFound() {
+        Developer developer = generateSingleDeveloper(DEFAULT_ID);
+        doReturn(null).when(developerRepository).get(DEFAULT_ID);
+
+        try {
+            sut.update(DEFAULT_ID, developer);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(developerRepository).get(DEFAULT_ID);
     }
 
     @Test
@@ -99,5 +139,18 @@ public class DeveloperServiceImplTest {
                 hasProperty("skills", is(developer.getSkills())),
                 hasProperty("account", is(developer.getAccount())))
         );
+    }
+
+    @Test
+    public void shouldThrowWhenDeletedDeveloperNotFound() {
+        doReturn(null).when(developerRepository).get(DEFAULT_ID);
+
+        try {
+            sut.remove(DEFAULT_ID);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(developerRepository).remove(DEFAULT_ID);
     }
 }

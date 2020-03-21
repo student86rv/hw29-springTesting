@@ -2,17 +2,17 @@ package ua.epam.springapp.service;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import ua.epam.springapp.exception.EntityNotFoundException;
 import ua.epam.springapp.model.Account;
 import ua.epam.springapp.repository.AccountRepository;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.hamcrest.Matchers.*;
 import static ua.epam.springapp.utils.AccountGenerator.generateAccounts;
 import static ua.epam.springapp.utils.AccountGenerator.generateSingleAccount;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -46,6 +46,19 @@ public class AccountServiceImplTest {
     }
 
     @Test
+    public void shouldThrowWhenAccountsListIsEmpty() {
+        doReturn(new ArrayList<Account>()).when(accountRepository).getAll();
+
+        try {
+            sut.getAll();
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(accountRepository).getAll();
+    }
+
+    @Test
     public void shouldGetAccount() {
         Account account = generateSingleAccount(DEFAULT_ID);
         doReturn(account).when(accountRepository).get(DEFAULT_ID);
@@ -59,6 +72,19 @@ public class AccountServiceImplTest {
                 hasProperty("email", is(account.getEmail())),
                 hasProperty("status", is(account.getStatus())))
         );
+    }
+
+    @Test
+    public void shouldThrowWhenAccountNotFound() {
+        doReturn(null).when(accountRepository).get(DEFAULT_ID);
+
+        try {
+            sut.get(DEFAULT_ID);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(accountRepository).get(DEFAULT_ID);
     }
 
     @Test
@@ -83,6 +109,20 @@ public class AccountServiceImplTest {
     }
 
     @Test
+    public void shouldThrowWhenUpdatedAccountNotFound() {
+        Account account = generateSingleAccount(DEFAULT_ID);
+        doReturn(null).when(accountRepository).get(DEFAULT_ID);
+
+        try {
+            sut.update(DEFAULT_ID, account);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(accountRepository).get(DEFAULT_ID);
+    }
+
+    @Test
     public void shouldDeleteAccount() {
         Account account = generateSingleAccount(DEFAULT_ID);
         doReturn(account).when(accountRepository).remove(DEFAULT_ID);
@@ -96,5 +136,18 @@ public class AccountServiceImplTest {
                 hasProperty("email", is(account.getEmail())),
                 hasProperty("status", is(account.getStatus())))
         );
+    }
+
+    @Test
+    public void shouldThrowWhenDeletedAccountNotFound() {
+        doReturn(null).when(accountRepository).get(DEFAULT_ID);
+
+        try {
+            sut.remove(DEFAULT_ID);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(accountRepository).remove(DEFAULT_ID);
     }
 }

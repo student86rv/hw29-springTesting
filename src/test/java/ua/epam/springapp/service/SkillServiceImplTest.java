@@ -2,9 +2,11 @@ package ua.epam.springapp.service;
 
 import org.junit.Test;
 import org.mockito.Mockito;
+import ua.epam.springapp.exception.EntityNotFoundException;
 import ua.epam.springapp.model.Skill;
 import ua.epam.springapp.repository.SkillRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static ua.epam.springapp.utils.SkillGenerator.generateSingleSkill;
@@ -45,6 +47,19 @@ public class SkillServiceImplTest {
     }
 
     @Test
+    public void shouldThrowWhenSkillsListIsEmpty() {
+        doReturn(new ArrayList<Skill>()).when(skillRepository).getAll();
+
+        try {
+            sut.getAll();
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(skillRepository).getAll();
+    }
+
+    @Test
     public void shouldGetSkill() {
         Skill skill = generateSingleSkill(DEFAULT_ID);
         doReturn(skill).when(skillRepository).get(DEFAULT_ID);
@@ -57,6 +72,19 @@ public class SkillServiceImplTest {
                 hasProperty("id", is(skill.getId())),
                 hasProperty("name", is(skill.getName())))
         );
+    }
+
+    @Test
+    public void shouldThrowWhenSkillNotFound() {
+        doReturn(null).when(skillRepository).get(DEFAULT_ID);
+
+        try {
+            sut.get(DEFAULT_ID);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(skillRepository).get(DEFAULT_ID);
     }
 
     @Test
@@ -81,7 +109,21 @@ public class SkillServiceImplTest {
     }
 
     @Test
-    public void shouldDeleteAccount() {
+    public void shouldThrowWhenUpdatedSkillNotFound() {
+        Skill skill = generateSingleSkill(DEFAULT_ID);
+        doReturn(null).when(skillRepository).get(DEFAULT_ID);
+
+        try {
+            sut.update(DEFAULT_ID, skill);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(skillRepository).get(DEFAULT_ID);
+    }
+
+    @Test
+    public void shouldDeleteSkill() {
         Skill skill = generateSingleSkill(DEFAULT_ID);
         doReturn(skill).when(skillRepository).remove(DEFAULT_ID);
 
@@ -93,5 +135,18 @@ public class SkillServiceImplTest {
                 hasProperty("id", is(skill.getId())),
                 hasProperty("name", is(skill.getName())))
         );
+    }
+
+    @Test
+    public void shouldThrowWhenDeletedSkillNotFound() {
+        doReturn(null).when(skillRepository).get(DEFAULT_ID);
+
+        try {
+            sut.remove(DEFAULT_ID);
+        } catch (Exception e) {
+            assertThat(e, instanceOf(EntityNotFoundException.class));
+        }
+
+        verify(skillRepository).remove(DEFAULT_ID);
     }
 }
