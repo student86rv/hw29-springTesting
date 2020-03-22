@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class ConnectionUtil {
 
     private static Logger LOGGER = Logger.getLogger(ConnectionUtil.class.getName());
-    private static BasicDataSource DATASOURCE = new BasicDataSource();
+    private static BasicDataSource DATA_SOURCE = new BasicDataSource();
     private static Properties properties;
 
     static {
@@ -22,12 +22,12 @@ public class ConnectionUtil {
         } catch (ClassNotFoundException e) {
             LOGGER.log(Level.SEVERE, "Database driver registration failed");
         }        properties = readProperties();
-        DATASOURCE.setUrl(properties.getProperty("db.url"));
-        DATASOURCE.setUsername(properties.getProperty("db.username"));
-        DATASOURCE.setPassword(properties.getProperty("db.password"));
-        DATASOURCE.setMinIdle(5);
-        DATASOURCE.setMaxIdle(10);
-        DATASOURCE.setMaxOpenPreparedStatements(100);
+        DATA_SOURCE.setUrl(properties.getProperty("db.url"));
+        DATA_SOURCE.setUsername(properties.getProperty("db.username"));
+        DATA_SOURCE.setPassword(properties.getProperty("db.password"));
+        DATA_SOURCE.setMinIdle(5);
+        DATA_SOURCE.setMaxIdle(10);
+        DATA_SOURCE.setMaxOpenPreparedStatements(100);
     }
 
     private static Properties readProperties() {
@@ -43,6 +43,6 @@ public class ConnectionUtil {
     }
 
     public static Connection getConnection() throws SQLException {
-        return DATASOURCE.getConnection();
+        return DATA_SOURCE.getConnection();
     }
 }

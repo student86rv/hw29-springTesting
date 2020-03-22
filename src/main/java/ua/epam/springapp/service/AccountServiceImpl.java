@@ -42,14 +42,6 @@ public class AccountServiceImpl implements AccountService{
     }
 
     @Override
-    public boolean update(Account entity) {
-        boolean updated = accountRepo.update(entity);
-        if (!updated) {
-            throw new EntityNotFoundException();
-        }
-        return updated;
-    }
-
     public boolean update(Long id, Account entity) {
         Account account = accountRepo.get(id);
         if (account == null) {

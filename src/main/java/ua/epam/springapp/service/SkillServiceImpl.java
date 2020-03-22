@@ -42,14 +42,6 @@ public class SkillServiceImpl implements SkillService {
     }
 
     @Override
-    public boolean update(Skill entity) {
-        boolean updated = skillRepo.update(entity);
-        if (!updated) {
-            throw new EntityNotFoundException();
-        }
-        return updated;
-    }
-
     public boolean update(Long id, Skill entity) {
         Skill skill = skillRepo.get(id);
         if (skill == null) {

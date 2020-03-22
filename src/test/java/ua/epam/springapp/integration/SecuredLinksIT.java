@@ -5,6 +5,7 @@ import org.springframework.http.MediaType;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -14,6 +15,7 @@ public class SecuredLinksIT extends BaseSpringIT {
     public void shouldGetSecuredResourceUser() throws Exception {
         mockMvc.perform(get("/user").with(user("user").password("user").roles("USER"))
                 .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(forwardedUrl("/WEB-INF/view/user.jsp"))
                 .andExpect(status().isOk());
     }
 
@@ -21,6 +23,7 @@ public class SecuredLinksIT extends BaseSpringIT {
     public void shouldGetSecuredResourceAdmin() throws Exception {
         mockMvc.perform(get("/admin").with(user("admin").password("admin").roles("ADMIN"))
                 .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(forwardedUrl("/WEB-INF/view/admin.jsp"))
                 .andExpect(status().isOk());
     }
 
@@ -28,6 +31,7 @@ public class SecuredLinksIT extends BaseSpringIT {
     public void shouldGetSecuredResourceAdminToUser() throws Exception {
         mockMvc.perform(get("/user").with(user("admin").password("admin").roles("ADMIN"))
                 .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(forwardedUrl("/WEB-INF/view/user.jsp"))
                 .andExpect(status().isOk());
     }
 

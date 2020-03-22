@@ -42,14 +42,6 @@ public class DeveloperServiceImpl implements DeveloperService {
     }
 
     @Override
-    public boolean update(Developer entity) {
-        boolean updated = developerRepo.update(entity);
-        if (!updated) {
-            throw new EntityNotFoundException();
-        }
-        return updated;
-    }
-
     public boolean update(Long id, Developer entity) {
         Developer developer = developerRepo.get(id);
         if (developer == null) {

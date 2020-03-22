@@ -10,8 +10,6 @@ public interface GenericService<T, ID> {
 
     List<T> getAll();
 
-    boolean update(T entity);
-
     boolean update(ID id, T entity);
 
     T remove(ID id);
